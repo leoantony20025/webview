@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:webview/screens/Home.dart';
+import 'screens/Home.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,8 +10,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsFlutterBinding.ensureInitialized();
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Hurawatch',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
