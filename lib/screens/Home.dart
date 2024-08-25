@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -150,6 +148,9 @@ class _HomeState extends State<Home> {
       var btn = filter.lastElementChild;
       btn.style.width = '33.3333333333%'
     ''';
+    String txtJS = '''
+      document.querySelector('.mb-3').style.display = 'none'
+    ''';
 
     void updateNav() async {
       WebUri? uri = await webViewController?.getUrl();
@@ -157,8 +158,6 @@ class _HomeState extends State<Home> {
 
       if (lastUrl != currentUrl) {
         lastUrl = currentUrl;
-        print("URLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
-        print(currentUrl.toString());
         if (currentUrl == urlHome) {
           setState(() {
             currentIndex = 0;
@@ -179,31 +178,19 @@ class _HomeState extends State<Home> {
       }
 
       if (currentUrl != urlHome) {
-        // print("HOOOOOOOOOOOOOOOMEEEEEEEEEEEEEEEEEEEEEE");
         webViewController?.evaluateJavascript(source: videoFilterJS);
+      }
+
+      if (currentUrl == urlHome) {
+        webViewController?.evaluateJavascript(source: txtJS);
       }
     }
 
     updateNav();
 
-    // Future<void> getAllCookies() async {
-    //   if (webViewController != null) {
-    //     try {
-    //       final result = await webViewController?.evaluateJavascript(
-    //           source: "document.cookie;");
-
-    //       print("Cookies: $result");
-    //       // Handle the cookies as needed
-    //     } catch (e) {
-    //       print("Error retrieving cookies: $e");
-    //     }
-    //   }
-    // }
-
-    // getAllCookies();
-
     webViewController?.evaluateJavascript(source: '''
       document.querySelector('#primary-nav-toggle').style.display = 'none';
+      document.querySelector('.logo').style.display = 'none';
       document.querySelector('#user-section').style.visibility = 'hidden';
 
       document.querySelector('header .container').style.marginTop = "20px";
@@ -223,6 +210,11 @@ class _HomeState extends State<Home> {
 
       var footer = document.getElementsByTagName('footer'); 
       footer[0].style.display = 'none';
+
+      var sg = document.querySelector('.suggesstion')
+      sg.style.marginTop = '-30px'
+      sg.style.marginLeft = '1px'
+      sg.style.width = '99%'
 
     ''');
 
@@ -307,6 +299,8 @@ class _HomeState extends State<Home> {
                       useOnLoadResource: true,
                       cacheEnabled: true,
                       cacheMode: CacheMode.LOAD_CACHE_ELSE_NETWORK,
+                      verticalScrollBarEnabled: false,
+                      horizontalScrollBarEnabled: false,
                     ),
                     onWebViewCreated: (controller) {
                       webViewController = controller;
