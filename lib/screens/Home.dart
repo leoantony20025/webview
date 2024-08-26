@@ -53,6 +53,8 @@ class _HomeState extends State<Home> {
       ".*.mc.yandex.ru/.*",
       // ".*.be6721.rcr72.waw04.cdn112.com/.*",
       ".*.precedelaxative.com/.*",
+      ".*.platform-cdn.sharethis.com/.*",
+      ".*.lashahib.net/.*",
     ];
     final youtubeUrlFilters = [
       ".*.static.doubleclick.net/.*",
@@ -72,6 +74,11 @@ class _HomeState extends State<Home> {
       ".*.google-analytics.com/.*",
       ".*.adservice.google.*/.*",
       ".*.adbrite.com/.*",
+      ".*.xvide/.*",
+      ".*.redtube.com/.*",
+      ".*.azvid.com/.*",
+      ".*.piratebay.com/.*",
+      ".*.youpo/.*",
       ".*.exponential.com/.*",
       ".*.quantserve.com/.*",
       ".*.scorecardresearch.com/.*",
@@ -79,6 +86,7 @@ class _HomeState extends State<Home> {
       ".*.adsafeprotected.com/.*",
       ".*.teads.tv/.*",
       ".*.outbrain.com/.*",
+      ".*.googletagmanager.com/.*",
       ...hurawatchUrlFilters,
       ...youtubeUrlFilters
     ];
@@ -140,7 +148,6 @@ class _HomeState extends State<Home> {
       }
       
     ''';
-
     String videoFilterJS = '''
       var filter = document.getElementById('video-filter');
       var search = filter.firstElementChild;
@@ -150,6 +157,17 @@ class _HomeState extends State<Home> {
     ''';
     String txtJS = '''
       document.querySelector('.mb-3').style.display = 'none'
+    ''';
+    String videoJS = '''
+      document.querySelector('.report').style.display = 'none'
+      document.querySelector('#video-info').style.marginBottom = '0'
+      document.querySelector('.watch-wrap').lastElementChild.style.display = 'none'
+    ''';
+    String bookmarkJS = '''
+      var bookmarks = document.querySelectorAll('.user-bookmark')
+      bookmarks.forEach((e) => {
+        e.style.display = 'none'
+      })
     ''';
 
     void updateNav() async {
@@ -183,6 +201,21 @@ class _HomeState extends State<Home> {
 
       if (currentUrl == urlHome) {
         webViewController?.evaluateJavascript(source: txtJS);
+      }
+
+      if (currentUrl != urlHome &&
+          currentUrl != urlMovie &&
+          currentUrl != urlTv &&
+          currentUrl != urlTop &&
+          currentUrl != urlFilter) {
+        webViewController?.evaluateJavascript(source: videoJS);
+      }
+
+      if (currentUrl != urlMovie &&
+          currentUrl != urlTv &&
+          currentUrl != urlTop &&
+          currentUrl != urlFilter) {
+        webViewController?.evaluateJavascript(source: bookmarkJS);
       }
     }
 
