@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-feature android:name="android.software.picture_in_picture" android:required="true"/>
     <application
-        android:label="Hurawatch"
+        android:label="Netflix"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

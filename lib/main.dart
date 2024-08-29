@@ -1,5 +1,6 @@
+import 'package:Netflix/screens/Splash.dart';
 import 'package:flutter/material.dart';
-import 'screens/Home.dart';
+import 'screens/Main.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,16 +13,21 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     WidgetsFlutterBinding.ensureInitialized();
     return MaterialApp(
-      title: 'Hurawatch',
+      title: 'Netflix',
       theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color.fromARGB(255, 0, 37, 60)),
+              seedColor: const Color.fromARGB(255, 15, 15, 15)),
           useMaterial3: true,
-          highlightColor: const Color.fromARGB(255, 0, 31, 53),
-          splashColor: const Color.fromARGB(255, 0, 17, 34),
+          highlightColor: const Color.fromARGB(255, 20, 20, 20),
+          splashColor: const Color.fromARGB(255, 21, 21, 21),
           scaffoldBackgroundColor: const Color.fromARGB(255, 0, 31, 51)),
+      initialRoute: '/home',
+      routes: {
+        '/home': (context) => const SplashScreen(),
+        '/main': (context) => const Main(), // Replace with your home screen
+      },
       debugShowCheckedModeBanner: false,
-      home: const Home(),
+      home: const Main(),
     );
   }
 }
