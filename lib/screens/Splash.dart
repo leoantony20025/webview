@@ -13,7 +13,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     navigateToHome() async {
       // Wait for the duration of the GIF or a few seconds
-      await Future.delayed(const Duration(seconds: 3));
+      await Future.delayed(const Duration(seconds: 2));
       // Navigate to your main screen (e.g., Home screen)
       Navigator.pushReplacementNamed(context, '/main');
     }

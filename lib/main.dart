@@ -1,4 +1,4 @@
-import 'package:Netflix/screens/Splash.dart';
+import 'package:netflix/screens/Splash.dart';
 import 'package:flutter/material.dart';
 import 'screens/Main.dart';
 

@@ -12,12 +12,13 @@ class Main extends StatefulWidget {
 }
 
 class _MainState extends State<Main> {
-  String urlHome = "https://iosmirror.cc/home";
+  String urlHome = "https://pcmirror.cc/home";
   String urlMovie = "https://iosmirror.cc/movies";
   String urlTv = "https://iosmirror.cc/series";
 
   final GlobalKey webViewKey = GlobalKey();
   InAppWebViewController? webViewController;
+  CookieManager cookieManager = CookieManager.instance();
   late PullToRefreshController? pullToRefreshController;
   PullToRefreshSettings pullToRefreshSettings = PullToRefreshSettings(
       color: const Color.fromRGBO(0, 32, 58, 1), enabled: true);
@@ -269,21 +270,21 @@ class _MainState extends State<Main> {
               cachePolicy: URLRequestCachePolicy.RETURN_CACHE_DATA_ELSE_LOAD));
     }
 
-    Timer(const Duration(seconds: 3), () {
-      if (!toggle) {
-        webViewController?.evaluateJavascript(source: '''
-        var checked = document.querySelector('.hd-onoff-input').checked
-        console.log("CHECK", checked)
-        if (!checked) {
-          document.querySelector('.hd-onoff-input').checked = true
-          document.querySelector('.hd-onoff-slider').click()
-        }
-      ''');
-      }
-      setState(() {
-        toggle = true;
-      });
-    });
+    Future<void> setCookie() async {
+      final expiresDate =
+          DateTime.now().add(Duration(days: 100)).millisecondsSinceEpoch;
+      bool ck = await cookieManager.setCookie(
+        url: WebUri("https://iosmirror.cc"),
+        name: "hd",
+        value: "on",
+        domain: ".iosmirror.cc",
+        path: "/",
+        expiresDate: expiresDate,
+      );
+      print("COOOOOOOOOOOOOOKIEEEEEEE $ck");
+    }
+
+    setCookie();
 
     return WillPopScope(
       onWillPop: () async {
@@ -368,14 +369,6 @@ class _MainState extends State<Main> {
                   onWebViewCreated: (controller) {
                     webViewController = controller;
                   },
-                  // onEnterFullscreen: (controller) {
-                  //   print("FULLLLLLLLLLLLLLLLLLLLLLLL");
-                  // },
-                  // onExitFullscreen: (controller) {
-                  //   print("FULLLLLLLLLLLLLLLLLLLLLLLL Eeeeeeeeee");
-
-                  //   webViewController!.goBack();
-                  // },
                   onLoadStart: (controller, url) {
                     setState(() {
                       isLoading = true;
@@ -387,22 +380,12 @@ class _MainState extends State<Main> {
                       controller.goBack();
                     }
                   },
-                  onLoadStop: (controller, url) async {
-                    // if (!toggle) {
-                    print("ONNNNNNNNNNNNNNNNNNNNNNNNNNN");
-
+                  onLoadStop: (controller, url) {
                     setState(() {
-                      toggle = true;
                       isLoading = false;
                       resourceLoad = 0;
                     });
-                    // }
                     pullToRefreshController?.endRefreshing();
-                  },
-                  onUpdateVisitedHistory: (controller, url, isReload) {
-                    setState(() {
-                      isLoading = true;
-                    });
                   },
                   onTitleChanged: (controller, title) {
                     setState(() {
@@ -418,20 +401,12 @@ class _MainState extends State<Main> {
                     });
                   },
                   onLoadResource: (controller, resource) {
-                    // WebUri? uri = resource.url;
-                    // String? currentUrl = uri.toString();
-                    // print("URLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL $currentUrl");
-                    // if (currentUrl.contains("setting.php")) {
-                    //   setState(() {
-                    //     toggle = true;
-                    //   });
-                    // }
                     if (resourceLoad < 5) {
                       webViewController?.evaluateJavascript(source: closeJS);
                     }
                   },
                 ),
-                isLoading || progress < 100
+                progress < 100
                     ? Container(
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height,
