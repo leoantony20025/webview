@@ -12,9 +12,10 @@ class Main extends StatefulWidget {
 }
 
 class _MainState extends State<Main> {
-  String urlHome = "https://pcmirror.cc/home";
+  String urlHome = "https://iosmirror.cc/home";
   String urlMovie = "https://iosmirror.cc/movies";
   String urlTv = "https://iosmirror.cc/series";
+  String urlVerify = "https://iosmirror.cc/verify";
 
   final GlobalKey webViewKey = GlobalKey();
   InAppWebViewController? webViewController;
@@ -148,19 +149,56 @@ class _MainState extends State<Main> {
       WebUri? uri = await webViewController?.getUrl();
       String? currentUrl = uri.toString();
 
+      if (currentUrl == urlVerify) {
+        setState(() {
+          isLoading = true;
+        });
+        await webViewController?.evaluateJavascript(source: '''
+
+          window.localStorage.setItem("_grecaptcha", "09APKjawcmHc9G5H_KB2njhMvBCTwFx5BhmHR0DsZ9qoNvirPFS2us7r8M71ld6fT9xY6FGpwmzb0eB7CB58QfAvNckcFDpAKfbXC7MQ");
+
+          document.cookie = "t_hash_t=ace3374245aeb7531bbb75274883e918%3A%3Ae2c95a078d776bd721147af644a95224%3A%3A1725870840%3A%3Ani; path=/";
+        ''');
+        final expiresDate =
+            DateTime.now().add(Duration(days: 100)).millisecondsSinceEpoch;
+        await cookieManager.setCookie(
+          url: WebUri("https://iosmirror.cc"),
+          name: "t_hash_t",
+          value:
+              "ace3374245aeb7531bbb75274883e918%3A%3Ae2c95a078d776bd721147af644a95224%3A%3A1725870840%3A%3Ani",
+          domain: ".iosmirror.cc",
+          path: "/",
+          expiresDate: expiresDate,
+        );
+        await cookieManager.setCookie(
+          url: WebUri("https://iosmirror.cc"),
+          name: "t_hash",
+          value:
+              "ace3374245aeb7531bbb75274883e918%3A%3Ae2c95a078d776bd721147af644a95224%3A%3A1725870840%3A%3Ani",
+          domain: ".iosmirror.cc",
+          path: "/",
+          expiresDate: expiresDate,
+        );
+        setState(() {
+          isLoading = false;
+          currentIndex = 0;
+        });
+        webViewController?.loadUrl(
+            urlRequest: URLRequest(
+                url: WebUri(urlMovie),
+                cachePolicy:
+                    URLRequestCachePolicy.RETURN_CACHE_DATA_ELSE_LOAD));
+      }
+
       if (lastUrl != currentUrl) {
         lastUrl = currentUrl;
-        if (currentUrl == urlHome) {
+        if (currentUrl == urlMovie) {
           setState(() {
             currentIndex = 0;
           });
-        } else if (currentUrl == urlMovie) {
-          setState(() {
-            currentIndex = 1;
-          });
         } else if (currentUrl == urlTv) {
           setState(() {
-            currentIndex = 2;
+            currentIndex = 1;
           });
         }
       }
@@ -176,22 +214,6 @@ class _MainState extends State<Main> {
           // element.classList.add('home_filled'); 
         ''');
       }
-
-      // if (currentUrl == urlMovie) {
-      //   webViewController?.evaluateJavascript(source: '''
-      //     const element = document.querySelector('.nav-link .movies');
-      //     element.classList.remove('movies');
-      //     element.classList.add('movies_filled');
-      //   ''');
-      // }
-
-      // if (currentUrl == urlTv) {
-      //   webViewController?.evaluateJavascript(source: '''
-      //     const element = document.querySelector('.nav-link .tv');
-      //     element.classList.remove('tv');
-      //     element.classList.add('tv_filled');
-      //   ''');
-      // }
     }
 
     updateNav();
@@ -200,6 +222,7 @@ class _MainState extends State<Main> {
       window.addEventListener('focus', function() {
         window.blur();
       });
+      document.querySelectorAll('.nav-container').item(0).style.visibility = 'visible';
       document.documentElement.style.setProperty('-webkit-tap-highlight-color', 'transparent');
       document.querySelector('.ott-list').style.display = 'none';
       document.querySelector('.note-msg').style.display = 'none';
@@ -250,20 +273,16 @@ class _MainState extends State<Main> {
           });
         });
 
-    // print("MOODALLLLLLLLLLLLLLLLLL $isModalOpen");
-
     void nav(int index) {
       webViewController?.stopLoading();
       setState(() {
         currentIndex = index;
       });
       String url = index == 0
-          ? urlHome
+          ? urlMovie
           : index == 1
-              ? urlMovie
-              : index == 2
-                  ? urlTv
-                  : urlHome;
+              ? urlTv
+              : urlMovie;
       webViewController?.loadUrl(
           urlRequest: URLRequest(
               url: WebUri(url),
@@ -273,7 +292,7 @@ class _MainState extends State<Main> {
     Future<void> setCookie() async {
       final expiresDate =
           DateTime.now().add(Duration(days: 100)).millisecondsSinceEpoch;
-      bool ck = await cookieManager.setCookie(
+      await cookieManager.setCookie(
         url: WebUri("https://iosmirror.cc"),
         name: "hd",
         value: "on",
@@ -281,7 +300,6 @@ class _MainState extends State<Main> {
         path: "/",
         expiresDate: expiresDate,
       );
-      print("COOOOOOOOOOOOOOKIEEEEEEE $ck");
     }
 
     setCookie();
@@ -319,15 +337,6 @@ class _MainState extends State<Main> {
           items: const [
             BottomNavigationBarItem(
               icon: Icon(
-                Icons.home_outlined,
-              ),
-              activeIcon: Icon(
-                Icons.home_filled,
-              ),
-              label: "Home",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
                 Icons.movie_outlined,
               ),
               activeIcon: Icon(
@@ -353,7 +362,7 @@ class _MainState extends State<Main> {
                 InAppWebView(
                   key: webViewKey,
                   pullToRefreshController: pullToRefreshController,
-                  initialUrlRequest: URLRequest(url: WebUri(urlHome)),
+                  initialUrlRequest: URLRequest(url: WebUri(urlMovie)),
                   initialSettings: InAppWebViewSettings(
                     contentBlockers: contentBlockers,
                     allowBackgroundAudioPlaying: true,
@@ -368,11 +377,6 @@ class _MainState extends State<Main> {
                   ),
                   onWebViewCreated: (controller) {
                     webViewController = controller;
-                  },
-                  onLoadStart: (controller, url) {
-                    setState(() {
-                      isLoading = true;
-                    });
                   },
                   onReceivedError: (controller, request, error) {
                     pullToRefreshController?.endRefreshing();
@@ -406,7 +410,7 @@ class _MainState extends State<Main> {
                     }
                   },
                 ),
-                progress < 100
+                isLoading || progress < 100
                     ? Container(
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height,
