@@ -12,7 +12,7 @@ class Main extends StatefulWidget {
 }
 
 class _MainState extends State<Main> {
-  String urlHome = "https://iosmirror.cc/home";
+  String urlHome = "https://iosmirror.cc/";
   String urlMovie = "https://iosmirror.cc/movies";
   String urlTv = "https://iosmirror.cc/series";
   String urlVerify = "https://iosmirror.cc/verify";
@@ -150,45 +150,66 @@ class _MainState extends State<Main> {
       String? currentUrl = uri.toString();
 
       if (currentUrl == urlVerify) {
-        setState(() {
-          isLoading = true;
-        });
         await webViewController?.evaluateJavascript(source: '''
 
-          window.localStorage.setItem("_grecaptcha", "09APKjawcmHc9G5H_KB2njhMvBCTwFx5BhmHR0DsZ9qoNvirPFS2us7r8M71ld6fT9xY6FGpwmzb0eB7CB58QfAvNckcFDpAKfbXC7MQ");
+          // window.localStorage.setItem("_grecaptcha", "09APKjawcmHc9G5H_KB2njhMvBCTwFx5BhmHR0DsZ9qoNvirPFS2us7r8M71ld6fT9xY6FGpwmzb0eB7CB58QfAvNckcFDpAKfbXC7MQ");
+          // document.cookie = "t_hash_t=ace3374245aeb7531bbb75274883e918%3A%3Ae2c95a078d776bd721147af644a95224%3A%3A1725870840%3A%3Ani; path=/";
+          // document.cookie = "t_hash=ace3374245aeb7531bbb75274883e918%3A%3Ae2c95a078d776bd721147af644a95224%3A%3A1725870840%3A%3Ani; path=/";
 
-          document.cookie = "t_hash_t=ace3374245aeb7531bbb75274883e918%3A%3Ae2c95a078d776bd721147af644a95224%3A%3A1725870840%3A%3Ani; path=/";
+          document.querySelector('.header').style.display = 'none';
+          var h1 = document.querySelectorAll('.info2 h1')
+          h1.forEach(e => {
+            e.style.display = 'none';
+          })
+          document.querySelector('.desc').style.display = 'none';
+          document.querySelector('#botverify input').style.display = 'none';
+          document.querySelector('.info2 button').style.display = 'none';
+
         ''');
-        final expiresDate =
-            DateTime.now().add(Duration(days: 100)).millisecondsSinceEpoch;
-        await cookieManager.setCookie(
-          url: WebUri("https://iosmirror.cc"),
-          name: "t_hash_t",
-          value:
-              "ace3374245aeb7531bbb75274883e918%3A%3Ae2c95a078d776bd721147af644a95224%3A%3A1725870840%3A%3Ani",
-          domain: ".iosmirror.cc",
-          path: "/",
-          expiresDate: expiresDate,
-        );
-        await cookieManager.setCookie(
-          url: WebUri("https://iosmirror.cc"),
-          name: "t_hash",
-          value:
-              "ace3374245aeb7531bbb75274883e918%3A%3Ae2c95a078d776bd721147af644a95224%3A%3A1725870840%3A%3Ani",
-          domain: ".iosmirror.cc",
-          path: "/",
-          expiresDate: expiresDate,
-        );
-        setState(() {
-          isLoading = false;
-          currentIndex = 0;
-        });
-        webViewController?.loadUrl(
-            urlRequest: URLRequest(
-                url: WebUri(urlMovie),
-                cachePolicy:
-                    URLRequestCachePolicy.RETURN_CACHE_DATA_ELSE_LOAD));
+        // final expiresDate =
+        //     DateTime.now().add(Duration(days: 100)).millisecondsSinceEpoch;
+        // await cookieManager.setCookie(
+        //   url: WebUri("https://iosmirror.cc"),
+        //   name: "t_hash_t",
+        //   value:
+        //       "ace3374245aeb7531bbb75274883e918%3A%3Ae2c95a078d776bd721147af644a95224%3A%3A1725870840%3A%3Ani",
+        //   domain: ".iosmirror.cc",
+        //   path: "/",
+        //   expiresDate: expiresDate,
+        // );
+        // await cookieManager.setCookie(
+        //   url: WebUri("https://iosmirror.cc"),
+        //   name: "t_hash",
+        //   value:
+        //       "ace3374245aeb7531bbb75274883e918%3A%3Ae2c95a078d776bd721147af644a95224%3A%3A1725870840%3A%3Ani",
+        //   domain: ".iosmirror.cc",
+        //   path: "/",
+        //   expiresDate: expiresDate,
+        // );
+
+        // webViewController?.loadUrl(
+        //     urlRequest: URLRequest(
+        //         url: WebUri(urlHome),
+        //         cachePolicy:
+        //             URLRequestCachePolicy.RETURN_CACHE_DATA_ELSE_LOAD));
       }
+
+      // if (lastUrl != currentUrl) {
+      //   lastUrl = currentUrl;
+      //   if (currentUrl == urlHome) {
+      //     setState(() {
+      //       currentIndex = 0;
+      //     });
+      //   } else if (currentUrl == urlMovie) {
+      //     setState(() {
+      //       currentIndex = 1;
+      //     });
+      //   } else if (currentUrl == urlTv) {
+      //     setState(() {
+      //       currentIndex = 2;
+      //     });
+      //   }
+      // }
 
       if (lastUrl != currentUrl) {
         lastUrl = currentUrl;
@@ -205,6 +226,7 @@ class _MainState extends State<Main> {
 
       if (currentUrl == urlHome) {
         webViewController?.evaluateJavascript(source: '''
+          document.querySelector('.header').style.display = 'initial';
           document.querySelectorAll('.tray-container').item(0).style.display = 'none';
           document.querySelectorAll('.tray-container').item(5).style.display = 'none';
           document.querySelectorAll('.tray-container').item(12).style.display = 'none';
@@ -278,6 +300,13 @@ class _MainState extends State<Main> {
       setState(() {
         currentIndex = index;
       });
+      // String url = index == 0
+      //     ? urlHome
+      //     : index == 1
+      //         ? urlMovie
+      //         : index == 2
+      //             ? urlTv
+      //             : urlHome;
       String url = index == 0
           ? urlMovie
           : index == 1
@@ -335,6 +364,15 @@ class _MainState extends State<Main> {
           selectedItemColor: Colors.white,
           elevation: 20,
           items: const [
+            // BottomNavigationBarItem(
+            //   icon: Icon(
+            //     Icons.movie_outlined,
+            //   ),
+            //   activeIcon: Icon(
+            //     Icons.movie_rounded,
+            //   ),
+            //   label: "Home",
+            // ),
             BottomNavigationBarItem(
               icon: Icon(
                 Icons.movie_outlined,
@@ -363,6 +401,7 @@ class _MainState extends State<Main> {
                   key: webViewKey,
                   pullToRefreshController: pullToRefreshController,
                   initialUrlRequest: URLRequest(url: WebUri(urlMovie)),
+                  keepAlive: InAppWebViewKeepAlive(),
                   initialSettings: InAppWebViewSettings(
                     contentBlockers: contentBlockers,
                     allowBackgroundAudioPlaying: true,
@@ -374,6 +413,11 @@ class _MainState extends State<Main> {
                     horizontalScrollBarEnabled: false,
                     iframeAllowFullscreen: false,
                     isTextInteractionEnabled: false,
+                    javaScriptEnabled: true,
+                    userAgent:
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 OPR/113.0.0.0",
+                    thirdPartyCookiesEnabled: true,
+                    sharedCookiesEnabled: true,
                   ),
                   onWebViewCreated: (controller) {
                     webViewController = controller;
