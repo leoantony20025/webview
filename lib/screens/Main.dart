@@ -320,7 +320,7 @@ class _MainState extends State<Main> {
 
     Future<void> setCookie() async {
       final expiresDate =
-          DateTime.now().add(Duration(days: 100)).millisecondsSinceEpoch;
+          DateTime.now().add(const Duration(days: 100)).millisecondsSinceEpoch;
       await cookieManager.setCookie(
         url: WebUri("https://iosmirror.cc"),
         name: "hd",
