@@ -82,4 +82,7 @@ flutter {
     source '../..'
 }
 
-dependencies {}
+dependencies {
+        "org.jetbrains.kotlin.android:2.0.21" // Latest Kotlin version
+
+}

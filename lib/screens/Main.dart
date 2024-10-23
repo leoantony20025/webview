@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class Main extends StatefulWidget {
@@ -12,16 +13,13 @@ class Main extends StatefulWidget {
 }
 
 class _MainState extends State<Main> {
-  String urlHome = "https://pcmirror.cc/home";
+  String urlHome = "https://iosmirror.cc/home";
   String urlMovie = "https://iosmirror.cc/movies";
   String urlTv = "https://iosmirror.cc/series";
 
   final GlobalKey webViewKey = GlobalKey();
   InAppWebViewController? webViewController;
   CookieManager cookieManager = CookieManager.instance();
-  late PullToRefreshController? pullToRefreshController;
-  PullToRefreshSettings pullToRefreshSettings = PullToRefreshSettings(
-      color: const Color.fromRGBO(0, 32, 58, 1), enabled: true);
   final List<ContentBlocker> contentBlockers = [];
   bool isLoading = true;
   int progress = 0;
@@ -30,6 +28,7 @@ class _MainState extends State<Main> {
   bool toggle = false;
   bool isModalOpen = false;
   int resourceLoad = 0;
+  FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -37,90 +36,54 @@ class _MainState extends State<Main> {
 
     lastUrl = null;
 
-    pullToRefreshController = PullToRefreshController(
-      settings: pullToRefreshSettings,
-      onRefresh: () async {
-        if (defaultTargetPlatform == TargetPlatform.android) {
-          webViewController?.reload();
-        } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-          webViewController?.loadUrl(
-              urlRequest: URLRequest(url: await webViewController?.getUrl()));
-        }
-      },
-    );
-
-    final hurawatchUrlFilters = [
-      ".*.whos.amung.us/.*",
-      ".*.weepingcart.com/.*",
-      ".*.l.sharethis.com/.*",
-      ".*.count-server.sharethis.com/.*",
-      ".*.mc.yandex.ru/.*",
-      // ".*.be6721.rcr72.waw04.cdn112.com/.*",
-      ".*.precedelaxative.com/.*",
-      ".*.platform-cdn.sharethis.com/.*",
-      ".*.lashahib.net/.*",
-      ".*.histats.com/.*",
-      ".*.prd.jwpltx.com/.*",
-      ".*.icon_.*",
-    ];
-    final youtubeUrlFilters = [
-      ".*.static.doubleclick.net/.*",
-      ".*.play.google.com/.*",
-      ".*.googleads.g.doubleclick.net/.*",
-      ".*.youtube.com/ptracking/.*",
-      ".*.doubleclick.net.*",
-      ".*.youtube.com/youtubei.*",
-      ".*.youtube.com/pagead.*",
-      ".*.youtube.com/api/stats/qoe.*",
-      ".*.doubleclick.net.*",
-    ];
-    final adUrlFilters = [
-      ".*.doubleclick.net/.*",
-      ".*.ads.pubmatic.com/.*",
-      ".*.googlesyndication.com/.*",
-      ".*.google-analytics.com/.*",
-      ".*.adservice.google.*/.*",
-      ".*.adbrite.com/.*",
-      ".*.xvide/.*",
-      ".*.redtube.com/.*",
-      ".*.azvid.com/.*",
-      ".*.piratebay.com/.*",
-      ".*.youpo/.*",
-      ".*.exponential.com/.*",
-      ".*.quantserve.com/.*",
-      ".*.scorecardresearch.com/.*",
-      ".*.zedo.com/.*",
-      ".*.adsafeprotected.com/.*",
-      ".*.teads.tv/.*",
-      ".*.outbrain.com/.*",
-      ".*.googletagmanager.com/.*",
-      ...hurawatchUrlFilters,
-      ...youtubeUrlFilters
-    ];
+    // final adUrlFilters = [
+    //   ".*.doubleclick.net/.*",
+    //   ".*.ads.pubmatic.com/.*",
+    //   ".*.googlesyndication.com/.*",
+    //   ".*.google-analytics.com/.*",
+    //   ".*.adservice.google.*/.*",
+    //   ".*.adbrite.com/.*",
+    //   ".*.xvide/.*",
+    //   ".*.redtube.com/.*",
+    //   ".*.azvid.com/.*",
+    //   ".*.piratebay.com/.*",
+    //   ".*.youpo/.*",
+    //   ".*.exponential.com/.*",
+    //   ".*.quantserve.com/.*",
+    //   ".*.scorecardresearch.com/.*",
+    //   ".*.zedo.com/.*",
+    //   ".*.adsafeprotected.com/.*",
+    //   ".*.teads.tv/.*",
+    //   ".*.outbrain.com/.*",
+    //   ".*.googletagmanager.com/.*",
+    // ];
     // for each Ad URL filter, add a Content Blocker to block its loading.
-    for (final adUrlFilter in adUrlFilters) {
-      contentBlockers.add(ContentBlocker(
-          trigger: ContentBlockerTrigger(
-            urlFilter: adUrlFilter,
-          ),
-          action: ContentBlockerAction(
-            type: ContentBlockerActionType.BLOCK,
-          )));
-    }
+    //   for (final adUrlFilter in adUrlFilters) {
+    //     contentBlockers.add(ContentBlocker(
+    //         trigger: ContentBlockerTrigger(
+    //           urlFilter: adUrlFilter,
+    //         ),
+    //         action: ContentBlockerAction(
+    //           type: ContentBlockerActionType.BLOCK,
+    //         )));
+    //   }
 
-    // apply the "display: none" style to some HTML elements
-    contentBlockers.add(ContentBlocker(
-        trigger: ContentBlockerTrigger(
-          urlFilter: ".*",
-        ),
-        action: ContentBlockerAction(
-            type: ContentBlockerActionType.CSS_DISPLAY_NONE,
-            selector:
-                ".banner, .banners, .afs_ads, .ad-placement, .ads, .ad, .advert")));
+    //   // apply the "display: none" style to some HTML elements
+    //   contentBlockers.add(ContentBlocker(
+    //       trigger: ContentBlockerTrigger(
+    //         urlFilter: ".*",
+    //       ),
+    //       action: ContentBlockerAction(
+    //           type: ContentBlockerActionType.CSS_DISPLAY_NONE,
+    //           selector:
+    //               ".banner, .banners, .afs_ads, .ad-placement, .ads, .ad, .advert")));
   }
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    bool isDesktop = screenWidth > 800;
+
     String closeJS = '''
       var play = document.querySelectorAll('.top-search-play')
       play.forEach(e => e.style.border = '1.5px solid white')
@@ -197,49 +160,121 @@ class _MainState extends State<Main> {
     updateNav();
 
     webViewController?.evaluateJavascript(source: '''
-      window.addEventListener('focus', function() {
-        window.blur();
-      });
-      document.documentElement.style.setProperty('-webkit-tap-highlight-color', 'transparent');
-      document.querySelector('.ott-list').style.display = 'none';
-      document.querySelector('.note-msg').style.display = 'none';
-      document.querySelector('.account').style.display = 'none';
-      document.querySelector('#hhide').style.display = 'none';
-      document.querySelector('.play-btn-s').style.display = 'none';
-      document.querySelector('.model-btn-download').style.display = 'none';
-      document.querySelector('.model-rating-box').style.display = 'none';
-      document.querySelector('#search-input').style.boxShadow = 'none';
-      document.querySelector('.footer').style.display = 'none';
-      document.querySelector('.btn-close-moveable').style.display = 'none';
-      document.querySelector('.btn-close2').style.padding = '15px';
-      document.querySelector('.btn-search-close').style.padding = '15px';
+      // window.addEventListener('focus', function() {
+      //   window.blur();
+      // });
 
-      document.querySelector('.search').style.zIndex = '2';
-      document.querySelector('.modal').style.zIndex = '3';
-      document.querySelector('#player').style.zIndex = '3';
-      // document.querySelector('.bottom-navigation-container').style.zIndex = '4';
+      var ad = document.querySelector('.open-support')
+      if (ad != null) {
+        console.log("adddddddddddddddddddd")
+        document.querySelector('.header').style.display = 'none'
+        document.querySelector('h1').style.color = 'white'
+        document.querySelector('h1').style.width = '70vw'
+        document.querySelector('h1').innerHTML = 'Unlimited movies, TV shows and more'
+        document.querySelector('h3').style.display = 'none'
+        document.querySelectorAll('p').forEach(e => e.style.display = 'none')
+        document.querySelector('.ssss').style.display = 'none'
+        document.querySelector('.info2 button').innerHTML = 'Start Now'
+        document.querySelector('.info2 button').style.background = '#c11119'
+        document.querySelector('.info2 button').style.fontWeight = '500'
+        document.querySelector('body button:last-of-type').style.display = 'none'
+        document.querySelector('.spotlight').style.filter = 'blur(10px)'
+        
+        // document.querySelector('.info2').style.opacity = '0'
+        // ad.click()
+        // loaction.href = '/home'
+      } else {
+        document.querySelector('.app').style.maxWidth = '100%';
+        document.querySelector('.header').style.maxWidth = '100%';
+        document.documentElement.style.setProperty('-webkit-tap-highlight-color', 'transparent');
+        // document.documentElement.style.setProperty('-webkit-scrollbar', 'transparent');
+        document.querySelector('.ott-list').style.display = 'none';
+        document.querySelector('.note-msg').style.display = 'none';
+        document.querySelector('.account').style.display = 'none';
+        document.querySelector('#hhide').style.display = 'none';
+        document.querySelector('.play-btn-s').style.display = 'none';
+        document.querySelector('.model-btn-download').style.display = 'none';
+        document.querySelector('.model-rating-box').style.display = 'none';
+        document.querySelector('.search').style.maxWidth = '100%';
+        document.querySelector('.modal-dialog').style.maxWidth = '100%';
+        document.querySelector('#search-input').style.boxShadow = 'none';
+        document.querySelector('.footer').style.display = 'none';
+        document.querySelector('.btn-close-moveable').style.display = 'none';
+        document.querySelector('.btn-close2').style.padding = '15px';
+        document.querySelector('.btn-search-close').style.padding = '15px';
 
-      var btns = document.querySelectorAll('.info .ion-align-items-center .ion-tex-center')
-      btns.item(0).style.display = 'none'
-      btns.item(1).style.flex = 1
-      btns.item(1).style.maxWidth = '100%'
-      btns.item(1).style.marginLeft = '20px'
+        document.querySelector('.search').style.zIndex = '2';
+        document.querySelector('.modal').style.zIndex = '3';
+        document.querySelector('#player').style.zIndex = '3';
+        // document.querySelector('.bottom-navigation-container').style.zIndex = '4';
 
-      document.querySelector('.nav-container').style.padding = '10px ';
-      document.querySelector('.nav-logo a').onclick = '/home ';
+        var btns = document.querySelectorAll('.info .ion-align-items-center .ion-tex-center')
+        btns.item(0).style.display = 'none'
+        btns.item(1).style.flex = 1
+        btns.item(1).style.maxWidth = '100%'
+        btns.item(1).style.marginLeft = '20px'
 
-      var logo = document.querySelector('.brand-logo')
-      logo.src = "https://img.icons8.com/external-tal-revivo-color-tal-revivo/24/external-netflix-an-american-video-on-demand-service-logo-color-tal-revivo.png"
-      logo.style.width = "30px"
-      logo.style.height = "30px"
+        document.querySelector('.nav-container').style.padding = '10px ';
+        document.querySelector('.nav-logo a').onclick = '/home ';
 
-      // var nav = document.querySelector('.bottom-navigation-container div ul')
-      // nav.style.justifyContent = 'space-evenly'
-      // var navItems = nav.children
-      // navItems.item(2).style.display = 'none'
-      // navItems.item(4).style.display = 'none'
+        var logo = document.querySelector('.brand-logo')
+        logo.src = "https://img.icons8.com/external-tal-revivo-color-tal-revivo/24/external-netflix-an-american-video-on-demand-service-logo-color-tal-revivo.png"
+        logo.style.width = "30px"
+        logo.style.height = "30px"
+      }
+      
 
     ''');
+
+    if (isDesktop) {
+      webViewController?.evaluateJavascript(source: '''
+        document.querySelector('.nav-container').style.padding = '30px ';
+        var playBtn = document.querySelector('.btn-play')
+        playBtn.style.width = 'max-content ';
+        playBtn.style.padding = '10px 40px ';
+        playBtn.querySelector('.ion-color').style.width = '30px'
+        var info = document.querySelector('.spotlight .info')
+        info.style.textAlign = 'left'
+        info.style.marginLeft = '30px'
+        info.style.bottom = '30px'
+        info.querySelector('ion-row').lastElementChild.style.display = 'none'
+        document.querySelector('.gradient').style.background = 'linear-gradient(#fff0, #00000036, #000)'
+        document.querySelector('.gradient').style.height = '100vh'
+        document.querySelector('.spotlight').style.height = '100vh'
+        document.querySelector('.spotlight').style.marginBottom = '30px'
+        document.querySelectorAll('.tray-container .mobile-tray-title').forEach(e => e.style.paddingLeft = '30px')
+        document.querySelectorAll('.tray-slide:first-child').forEach(e => e.style.marginLeft = '30px')
+        
+        var navContainer = document.querySelector('.nav-container');
+
+        if (navContainer && navContainer.children.length <= 4) {
+          const e1 = document.createElement('a');
+          e1.href = "/";
+          e1.addEventListener('click', () => location.href = '/')
+          e1.textContent = 'Home';
+          e1.style.marginLeft = '10px';
+          e1.style.fontWeight = '550';
+
+          const e2 = document.createElement('a');
+          e2.href = "/movies";
+          e1.addEventListener('click', () => location.href = '/movies')
+          e2.textContent = 'Movies';
+          e2.style.marginLeft = '10px';
+          e2.style.fontWeight = '550';
+
+          const e3 = document.createElement('a');
+          e3.href = "/series";
+          e1.addEventListener('click', () => location.href = '/series')
+          e3.textContent = 'TV Shows';
+          e3.style.marginLeft = '10px';
+          e3.style.fontWeight = '550';
+          navContainer.insertBefore(e1, navContainer.children[1]);
+          navContainer.insertBefore(e2, navContainer.children[2]);
+          navContainer.insertBefore(e3, navContainer.children[3]);
+        } 
+
+      ''');
+    }
 
     webViewController?.addJavaScriptHandler(
         handlerName: 'modalHandler',
@@ -266,8 +301,8 @@ class _MainState extends State<Main> {
                   : urlHome;
       webViewController?.loadUrl(
           urlRequest: URLRequest(
-              url: WebUri(url),
-              cachePolicy: URLRequestCachePolicy.RETURN_CACHE_DATA_ELSE_LOAD));
+        url: WebUri(url),
+      ));
     }
 
     Future<void> setCookie() async {
@@ -302,126 +337,291 @@ class _MainState extends State<Main> {
         return true;
       },
       child: SafeArea(
-          child: Scaffold(
-        backgroundColor: Colors.black,
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: const Color.fromARGB(255, 21, 21, 21),
-          // showSelectedLabels: false,
-          // showUnselectedLabels: false,
-          selectedLabelStyle: const TextStyle(fontSize: 10),
-          unselectedLabelStyle: const TextStyle(fontSize: 10),
-          currentIndex: currentIndex,
-          onTap: (value) => nav(value),
-          type: BottomNavigationBarType.fixed,
-          unselectedItemColor: const Color.fromRGBO(53, 53, 53, 1),
-          selectedItemColor: Colors.white,
-          elevation: 20,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.home_outlined,
-              ),
-              activeIcon: Icon(
-                Icons.home_filled,
-              ),
-              label: "Home",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.movie_outlined,
-              ),
-              activeIcon: Icon(
-                Icons.movie_rounded,
-              ),
-              label: "Movies",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.smart_display_outlined,
-              ),
-              activeIcon: Icon(
-                Icons.smart_display_rounded,
-              ),
-              label: "Series",
-            ),
-          ],
-        ),
-        body: Column(children: <Widget>[
-          Expanded(
-            child: Stack(
-              children: [
-                InAppWebView(
-                  key: webViewKey,
-                  pullToRefreshController: pullToRefreshController,
-                  initialUrlRequest: URLRequest(url: WebUri(urlHome)),
-                  initialSettings: InAppWebViewSettings(
-                    contentBlockers: contentBlockers,
-                    allowBackgroundAudioPlaying: true,
-                    allowsPictureInPictureMediaPlayback: true,
-                    useOnLoadResource: true,
-                    cacheEnabled: true,
-                    cacheMode: CacheMode.LOAD_CACHE_ELSE_NETWORK,
-                    verticalScrollBarEnabled: false,
-                    horizontalScrollBarEnabled: false,
-                    iframeAllowFullscreen: false,
-                    isTextInteractionEnabled: false,
+          // minimum: EdgeInsets.all(20),
+          child: isDesktop
+              ? Scaffold(
+                  backgroundColor: Colors.black,
+                  body: Column(children: <Widget>[
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          Focus(
+                            focusNode: _focusNode,
+                            onFocusChange: (value) {},
+                            onKeyEvent: (node, event) {
+                              if (event is KeyDownEvent) {
+                                if (event.logicalKey ==
+                                    LogicalKeyboardKey.arrowUp) {
+                                  // Simulate moving focus to the previous element
+                                  _focusNode.requestFocus();
+                                  webViewController
+                                      ?.evaluateJavascript(source: """
+                                        var prevElem = document.activeElement.previousElementSibling;
+                                        if (prevElem && prevElem.hasAttribute('tabindex')) {
+                                          prevElem.focus();
+                                        }
+                                      """);
+                                  return KeyEventResult.handled;
+                                }
+                                // Handle arrow down, left, right similarly
+                              }
+                              return KeyEventResult.ignored;
+                            },
+                            child: InAppWebView(
+                              key: webViewKey,
+                              initialUrlRequest:
+                                  URLRequest(url: WebUri(urlHome)),
+                              initialSettings: InAppWebViewSettings(
+                                  contentBlockers: contentBlockers,
+                                  clearCache: true,
+                                  allowBackgroundAudioPlaying: true,
+                                  allowsPictureInPictureMediaPlayback: true,
+                                  useOnLoadResource: true,
+                                  cacheEnabled: false,
+                                  useOnDownloadStart: true,
+                                  // cacheMode: CacheMode.LOAD_CACHE_ELSE_NETWORK,
+                                  verticalScrollBarEnabled: false,
+                                  horizontalScrollBarEnabled: false,
+                                  iframeAllowFullscreen: false,
+                                  isTextInteractionEnabled: false,
+                                  hardwareAcceleration: true,
+                                  javaScriptEnabled: true),
+                              onWebViewCreated: (controller) {
+                                webViewController = controller;
+                              },
+                              onReceivedServerTrustAuthRequest:
+                                  (controller, challenge) async {
+                                return ServerTrustAuthResponse(
+                                    action:
+                                        ServerTrustAuthResponseAction.PROCEED);
+                              },
+                              onLoadStart: (controller, url) {
+                                setState(() {
+                                  isLoading = true;
+                                });
+                              },
+                              onReceivedError: (controller, request, error) {
+                                if (error.type ==
+                                    WebResourceErrorType.UNSUPPORTED_SCHEME) {
+                                  controller.goBack();
+                                }
+                              },
+                              onLoadStop: (controller, url) async {
+                                setState(() {
+                                  isLoading = false;
+                                  resourceLoad = 0;
+                                });
+                                await controller.evaluateJavascript(source: """
+                                  document.querySelectorAll('a, button, input, .btn-play, article').forEach(function(el) {
+                                    if (!el.hasAttribute('tabindex')) {
+                                      el.setAttribute('tabindex', '0');
+                                    }
+                                  });
+                                """);
+                                await controller.evaluateJavascript(source: """
+                                  document.addEventListener('keydown', function(event) {
+                                    switch (event.key) {
+                                      case 'ArrowUp':
+                                        event.preventDefault();
+                                        let prevElem = document.activeElement.previousElementSibling;
+                                        if (prevElem && prevElem.hasAttribute('tabindex')) {
+                                          prevElem.focus();
+                                        }
+                                        break;
+                                      case 'ArrowDown':
+                                        event.preventDefault();
+                                        let nextElem = document.activeElement.nextElementSibling;
+                                        if (nextElem && nextElem.hasAttribute('tabindex')) {
+                                          nextElem.focus();
+                                        }
+                                        break;
+                                      case 'ArrowLeft':
+                                        event.preventDefault();
+                                        let prevElemLeft = document.activeElement.previousElementSibling;
+                                        if (prevElemLeft && prevElemLeft.hasAttribute('tabindex')) {
+                                          prevElemLeft.focus();
+                                        }
+                                        break;
+                                      case 'ArrowRight':
+                                        event.preventDefault();
+                                        let nextElemRight = document.activeElement.nextElementSibling;
+                                        if (nextElemRight && nextElemRight.hasAttribute('tabindex')) {
+                                          nextElemRight.focus();
+                                        }
+                                        break;
+                                    }
+                                  });
+
+                                """);
+                              },
+                              onTitleChanged: (controller, title) {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              },
+                              onProgressChanged: (controller, progress) {
+                                if (progress == 100) {}
+                                setState(() {
+                                  this.progress = progress;
+                                });
+                              },
+                              onLoadResource: (controller, resource) {
+                                if (resourceLoad < 5) {
+                                  webViewController?.evaluateJavascript(
+                                      source: closeJS);
+                                }
+                              },
+                            ),
+                          ),
+                          progress < 70
+                              ? Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: MediaQuery.of(context).size.height,
+                                  alignment: Alignment.center,
+                                  decoration: const BoxDecoration(
+                                      color: Color.fromRGBO(0, 0, 0, 0.915)),
+                                  child: const CircularProgressIndicator(
+                                      color: Color.fromARGB(255, 220, 23, 23)),
+                                )
+                              : const SizedBox()
+                        ],
+                      ),
+                    ),
+                  ]),
+                )
+              : Scaffold(
+                  backgroundColor: Colors.black,
+                  bottomNavigationBar: BottomNavigationBar(
+                    backgroundColor: const Color.fromARGB(255, 21, 21, 21),
+                    // showSelectedLabels: false,
+                    // showUnselectedLabels: false,
+                    selectedLabelStyle: const TextStyle(fontSize: 10),
+                    unselectedLabelStyle: const TextStyle(fontSize: 10),
+                    currentIndex: currentIndex,
+                    onTap: (value) => nav(value),
+                    type: BottomNavigationBarType.fixed,
+                    unselectedItemColor: const Color.fromRGBO(53, 53, 53, 1),
+                    selectedItemColor: Colors.white,
+                    elevation: 20,
+                    items: const [
+                      BottomNavigationBarItem(
+                        icon: Icon(
+                          Icons.home_outlined,
+                        ),
+                        activeIcon: Icon(
+                          Icons.home_filled,
+                        ),
+                        label: "Home",
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(
+                          Icons.movie_outlined,
+                        ),
+                        activeIcon: Icon(
+                          Icons.movie_rounded,
+                        ),
+                        label: "Movies",
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(
+                          Icons.smart_display_outlined,
+                        ),
+                        activeIcon: Icon(
+                          Icons.smart_display_rounded,
+                        ),
+                        label: "Series",
+                      ),
+                    ],
                   ),
-                  onWebViewCreated: (controller) {
-                    webViewController = controller;
-                  },
-                  onLoadStart: (controller, url) {
-                    setState(() {
-                      isLoading = true;
-                    });
-                  },
-                  onReceivedError: (controller, request, error) {
-                    pullToRefreshController?.endRefreshing();
-                    if (error.type == WebResourceErrorType.UNSUPPORTED_SCHEME) {
-                      controller.goBack();
-                    }
-                  },
-                  onLoadStop: (controller, url) {
-                    setState(() {
-                      isLoading = false;
-                      resourceLoad = 0;
-                    });
-                    pullToRefreshController?.endRefreshing();
-                  },
-                  onTitleChanged: (controller, title) {
-                    setState(() {
-                      isLoading = false;
-                    });
-                  },
-                  onProgressChanged: (controller, progress) {
-                    if (progress == 100) {
-                      pullToRefreshController?.endRefreshing();
-                    }
-                    setState(() {
-                      this.progress = progress;
-                    });
-                  },
-                  onLoadResource: (controller, resource) {
-                    if (resourceLoad < 5) {
-                      webViewController?.evaluateJavascript(source: closeJS);
-                    }
-                  },
-                ),
-                progress < 100
-                    ? Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height,
-                        alignment: Alignment.center,
-                        decoration: const BoxDecoration(
-                            color: Color.fromRGBO(0, 0, 0, 0.915)),
-                        child: const CircularProgressIndicator(
-                            color: Color.fromARGB(255, 220, 23, 23)),
-                      )
-                    : const SizedBox()
-              ],
-            ),
-          ),
-        ]),
-      )),
+                  body: Column(children: <Widget>[
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          InAppWebView(
+                            key: webViewKey,
+                            initialUrlRequest: URLRequest(url: WebUri(urlHome)),
+                            initialSettings: InAppWebViewSettings(
+                                contentBlockers: contentBlockers,
+                                clearCache: true,
+                                allowBackgroundAudioPlaying: true,
+                                allowsPictureInPictureMediaPlayback: true,
+                                useOnLoadResource: true,
+                                cacheEnabled: false,
+                                useOnDownloadStart: true,
+                                // cacheMode: CacheMode.LOAD_CACHE_ELSE_NETWORK,
+                                verticalScrollBarEnabled: false,
+                                horizontalScrollBarEnabled: false,
+                                iframeAllowFullscreen: false,
+                                isTextInteractionEnabled: false,
+                                hardwareAcceleration: true,
+                                javaScriptEnabled: true),
+                            onWebViewCreated: (controller) {
+                              webViewController = controller;
+                            },
+                            shouldOverrideUrlLoading:
+                                (controller, navigationAction) async {
+                              final uri = navigationAction.request.url!;
+                              print('hosttttttttttttt' + uri.host);
+                              var whiteList = [
+                                "iosmirror.cc",
+                                "userverify.netmirror.app"
+                              ];
+                              if (whiteList.contains(uri.host)) {
+                                return NavigationActionPolicy.ALLOW;
+                              }
+                              return NavigationActionPolicy.CANCEL;
+                            },
+                            onReceivedServerTrustAuthRequest:
+                                (controller, challenge) async {
+                              return ServerTrustAuthResponse(
+                                  action:
+                                      ServerTrustAuthResponseAction.PROCEED);
+                            },
+                            onLoadStart: (controller, url) {
+                              setState(() {
+                                isLoading = true;
+                              });
+                            },
+                            onReceivedError: (controller, request, error) {
+                              if (error.type ==
+                                  WebResourceErrorType.UNSUPPORTED_SCHEME) {
+                                controller.goBack();
+                              }
+                            },
+                            onTitleChanged: (controller, title) {
+                              setState(() {
+                                isLoading = false;
+                              });
+                            },
+                            onProgressChanged: (controller, progress) {
+                              if (progress == 100) {}
+                              setState(() {
+                                this.progress = progress;
+                              });
+                            },
+                            onLoadResource: (controller, resource) {
+                              if (resourceLoad < 5) {
+                                webViewController?.evaluateJavascript(
+                                    source: closeJS);
+                              }
+                            },
+                          ),
+                          progress < 100
+                              ? Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: MediaQuery.of(context).size.height,
+                                  alignment: Alignment.center,
+                                  decoration: const BoxDecoration(
+                                      color: Color.fromRGBO(0, 0, 0, 0.915)),
+                                  child: const CircularProgressIndicator(
+                                      color: Color.fromARGB(255, 220, 23, 23)),
+                                )
+                              : const SizedBox()
+                        ],
+                      ),
+                    ),
+                  ]),
+                )),
     );
   }
 }

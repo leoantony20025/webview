@@ -1,4 +1,4 @@
-import 'package:netflix/screens/Splash.dart';
+import 'screens/Splash.dart';
 import 'package:flutter/material.dart';
 import 'screens/Main.dart';
 
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         '/main': (context) => const Main(), // Replace with your home screen
       },
       debugShowCheckedModeBanner: false,
-      home: const Main(),
+      home: const SplashScreen(),
     );
   }
 }
