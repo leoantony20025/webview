@@ -19,70 +19,31 @@ class _MainState extends State<Main> {
 
   final GlobalKey webViewKey = GlobalKey();
   InAppWebViewController? webViewController;
-  CookieManager cookieManager = CookieManager.instance();
   final List<ContentBlocker> contentBlockers = [];
   bool isLoading = true;
   int progress = 0;
   int currentIndex = 0;
-  String? lastUrl;
+  String? lastUrl = null;
   bool toggle = false;
   bool isModalOpen = false;
   int resourceLoad = 0;
-  FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
+  }
 
-    lastUrl = null;
-
-    // final adUrlFilters = [
-    //   ".*.doubleclick.net/.*",
-    //   ".*.ads.pubmatic.com/.*",
-    //   ".*.googlesyndication.com/.*",
-    //   ".*.google-analytics.com/.*",
-    //   ".*.adservice.google.*/.*",
-    //   ".*.adbrite.com/.*",
-    //   ".*.xvide/.*",
-    //   ".*.redtube.com/.*",
-    //   ".*.azvid.com/.*",
-    //   ".*.piratebay.com/.*",
-    //   ".*.youpo/.*",
-    //   ".*.exponential.com/.*",
-    //   ".*.quantserve.com/.*",
-    //   ".*.scorecardresearch.com/.*",
-    //   ".*.zedo.com/.*",
-    //   ".*.adsafeprotected.com/.*",
-    //   ".*.teads.tv/.*",
-    //   ".*.outbrain.com/.*",
-    //   ".*.googletagmanager.com/.*",
-    // ];
-    // for each Ad URL filter, add a Content Blocker to block its loading.
-    //   for (final adUrlFilter in adUrlFilters) {
-    //     contentBlockers.add(ContentBlocker(
-    //         trigger: ContentBlockerTrigger(
-    //           urlFilter: adUrlFilter,
-    //         ),
-    //         action: ContentBlockerAction(
-    //           type: ContentBlockerActionType.BLOCK,
-    //         )));
-    //   }
-
-    //   // apply the "display: none" style to some HTML elements
-    //   contentBlockers.add(ContentBlocker(
-    //       trigger: ContentBlockerTrigger(
-    //         urlFilter: ".*",
-    //       ),
-    //       action: ContentBlockerAction(
-    //           type: ContentBlockerActionType.CSS_DISPLAY_NONE,
-    //           selector:
-    //               ".banner, .banners, .afs_ads, .ad-placement, .ads, .ad, .advert")));
+  @override
+  void dispose() {
+    // webViewController?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     bool isDesktop = screenWidth > 800;
+    // CookieManager cookieManager = CookieManager.instance();
 
     String closeJS = '''
       var play = document.querySelectorAll('.top-search-play')
@@ -107,6 +68,7 @@ class _MainState extends State<Main> {
       document.querySelector('#player').classList.add('hide');
       window.flutter_inappwebview.callHandler('modalHandler', false);
     ''';
+
     void updateNav() async {
       WebUri? uri = await webViewController?.getUrl();
       String? currentUrl = uri.toString();
@@ -139,22 +101,6 @@ class _MainState extends State<Main> {
           // element.classList.add('home_filled'); 
         ''');
       }
-
-      // if (currentUrl == urlMovie) {
-      //   webViewController?.evaluateJavascript(source: '''
-      //     const element = document.querySelector('.nav-link .movies');
-      //     element.classList.remove('movies');
-      //     element.classList.add('movies_filled');
-      //   ''');
-      // }
-
-      // if (currentUrl == urlTv) {
-      //   webViewController?.evaluateJavascript(source: '''
-      //     const element = document.querySelector('.nav-link .tv');
-      //     element.classList.remove('tv');
-      //     element.classList.add('tv_filled');
-      //   ''');
-      // }
     }
 
     updateNav();
@@ -177,6 +123,7 @@ class _MainState extends State<Main> {
         document.querySelector('.info2 button').innerHTML = 'Start Now'
         document.querySelector('.info2 button').style.background = '#c11119'
         document.querySelector('.info2 button').style.fontWeight = '500'
+        document.querySelector('.info2 button').style.fontSize = 'medium'
         document.querySelector('body button:last-of-type').style.display = 'none'
         document.querySelector('.spotlight').style.filter = 'blur(10px)'
         
@@ -305,21 +252,21 @@ class _MainState extends State<Main> {
       ));
     }
 
-    Future<void> setCookie() async {
-      final expiresDate =
-          DateTime.now().add(Duration(days: 100)).millisecondsSinceEpoch;
-      bool ck = await cookieManager.setCookie(
-        url: WebUri("https://iosmirror.cc"),
-        name: "hd",
-        value: "on",
-        domain: ".iosmirror.cc",
-        path: "/",
-        expiresDate: expiresDate,
-      );
-      print("COOOOOOOOOOOOOOKIEEEEEEE $ck");
-    }
+    // Future<void> setCookie() async {
+    //   final expiresDate =
+    //       DateTime.now().add(Duration(days: 100)).millisecondsSinceEpoch;
+    //   bool ck = await cookieManager.setCookie(
+    //     url: WebUri("https://iosmirror.cc"),
+    //     name: "hd",
+    //     value: "on",
+    //     domain: ".iosmirror.cc",
+    //     path: "/",
+    //     expiresDate: expiresDate,
+    //   );
+    //   print("COOOOOOOOOOOOOOKIEEEEEEE $ck");
+    // }
 
-    setCookie();
+    // setCookie();
 
     return WillPopScope(
       onWillPop: () async {
@@ -346,14 +293,13 @@ class _MainState extends State<Main> {
                       child: Stack(
                         children: [
                           Focus(
-                            focusNode: _focusNode,
+                            // focusNode: _focusNode,
                             onFocusChange: (value) {},
                             onKeyEvent: (node, event) {
                               if (event is KeyDownEvent) {
                                 if (event.logicalKey ==
                                     LogicalKeyboardKey.arrowUp) {
-                                  // Simulate moving focus to the previous element
-                                  _focusNode.requestFocus();
+                                  // _focusNode.requestFocus();
                                   webViewController
                                       ?.evaluateJavascript(source: """
                                         var prevElem = document.activeElement.previousElementSibling;
@@ -458,6 +404,20 @@ class _MainState extends State<Main> {
                                 setState(() {
                                   isLoading = false;
                                 });
+                              },
+                              shouldOverrideUrlLoading:
+                                  (controller, navigationAction) async {
+                                final uri = navigationAction.request.url!;
+                                print('hostttttTTTTTTTTTTT' + uri.host);
+                                var whiteList = [
+                                  "www.iosmirror.cc",
+                                  "iosmirror.cc",
+                                  "www.verify2.iosmirror.cc"
+                                ];
+                                if (whiteList.contains(uri.host)) {
+                                  return NavigationActionPolicy.ALLOW;
+                                }
+                                return NavigationActionPolicy.CANCEL;
                               },
                               onProgressChanged: (controller, progress) {
                                 if (progress == 100) {}
