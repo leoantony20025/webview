@@ -1,3 +1,6 @@
+import 'package:flutter/services.dart';
+import 'package:netflix/screens/MainPrime.dart';
+
 import 'screens/Splash.dart';
 import 'package:flutter/material.dart';
 import 'screens/Main.dart';
@@ -12,6 +15,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     WidgetsFlutterBinding.ensureInitialized();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
     return MaterialApp(
       title: 'Netflix',
       theme: ThemeData(
@@ -23,11 +28,16 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color.fromARGB(255, 0, 31, 51)),
       initialRoute: '/home',
       routes: {
-        '/home': (context) => const SplashScreen(),
-        '/main': (context) => const Main(), // Replace with your home screen
+        '/home': (context) => const SplashScreen(
+              ott: 0,
+            ),
+        '/prime': (context) => const MainPrime(),
+        '/main': (context) => const Main(),
       },
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(),
+      home: const SplashScreen(
+        ott: 0,
+      ),
     );
   }
 }

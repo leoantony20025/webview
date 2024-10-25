@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:netflix/screens/Splash.dart';
 
 class Main extends StatefulWidget {
   const Main({super.key});
@@ -23,27 +23,29 @@ class _MainState extends State<Main> {
   bool isLoading = true;
   int progress = 0;
   int currentIndex = 0;
-  String? lastUrl = null;
+  String? lastUrl;
   bool toggle = false;
   bool isModalOpen = false;
   int resourceLoad = 0;
 
   @override
   void initState() {
+    webViewController?.addJavaScriptHandler(
+        handlerName: 'modalHandler',
+        callback: (args) {
+          bool isModalOpen = args[0];
+          setState(() {
+            this.isModalOpen = isModalOpen;
+          });
+        });
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    // webViewController?.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     bool isDesktop = screenWidth > 800;
-    // CookieManager cookieManager = CookieManager.instance();
+    CookieManager cookieManager = CookieManager.instance();
 
     String closeJS = '''
       var play = document.querySelectorAll('.top-search-play')
@@ -89,89 +91,111 @@ class _MainState extends State<Main> {
           });
         }
       }
-
-      if (currentUrl == urlHome) {
-        webViewController?.evaluateJavascript(source: '''
-          document.querySelectorAll('.tray-container').item(0).style.display = 'none';
-          document.querySelectorAll('.tray-container').item(5).style.display = 'none';
-          document.querySelectorAll('.tray-container').item(12).style.display = 'none';
-
-          // const element = document.querySelector('.nav-link .home'); 
-          // element.classList.remove('home'); 
-          // element.classList.add('home_filled'); 
-        ''');
-      }
     }
 
     updateNav();
 
     webViewController?.evaluateJavascript(source: '''
-      // window.addEventListener('focus', function() {
-      //   window.blur();
-      // });
+        // window.addEventListener('focus', function() {
+        //   window.blur();
+        // });
 
-      var ad = document.querySelector('.open-support')
-      if (ad != null) {
-        console.log("adddddddddddddddddddd")
-        document.querySelector('.header').style.display = 'none'
-        document.querySelector('h1').style.color = 'white'
-        document.querySelector('h1').style.width = '70vw'
-        document.querySelector('h1').innerHTML = 'Unlimited movies, TV shows and more'
-        document.querySelector('h3').style.display = 'none'
-        document.querySelectorAll('p').forEach(e => e.style.display = 'none')
-        document.querySelector('.ssss').style.display = 'none'
-        document.querySelector('.info2 button').innerHTML = 'Start Now'
-        document.querySelector('.info2 button').style.background = '#c11119'
-        document.querySelector('.info2 button').style.fontWeight = '500'
-        document.querySelector('.info2 button').style.fontSize = 'medium'
-        document.querySelector('body button:last-of-type').style.display = 'none'
-        document.querySelector('.spotlight').style.filter = 'blur(10px)'
+        // const date = new Date();
+        // date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); // Convert days to milliseconds
+        // const expires = "expires=" + date.toUTCString();
+        // document.cookie = "hd=on;" + expires + ";path=/";
+
+        var ad = document.querySelector('.open-support')
+        if (ad != null) {
+          console.log("adddddddddddddddddddd")
+          document.querySelector('.header').style.display = 'none'
+          document.querySelector('h1').style.color = 'white'
+          document.querySelector('h1').style.width = '70vw'
+          document.querySelector('h1').innerHTML = 'Unlimited movies, TV shows and more'
+          document.querySelector('h3').style.display = 'none'
+          document.querySelectorAll('p').forEach(e => e.style.display = 'none')
+          document.querySelector('.ssss').style.display = 'none'
+          document.querySelector('.info2 button').innerHTML = 'Start Now'
+          document.querySelector('.info2 button').style.background = '#c11119'
+          document.querySelector('.info2 button').style.fontWeight = '500'
+          document.querySelector('.info2 button').style.fontSize = 'medium'
+          document.querySelector('body button:last-of-type').style.display = 'none'
+          document.querySelector('.spotlight').style.filter = 'blur(10px)'
+          
+          // document.querySelector('.info2').style.opacity = '0'
+          // ad.click()
+          // loaction.href = '/home'
+        } else {
+          document.documentElement.style.overflow = 'auto';
+          document.body.style.overflow = 'auto';
+          const style = document.createElement('style');
+          style.innerHTML = `
+            ::-webkit-scrollbar {
+              display: none;
+            }
+            body {
+              -ms-overflow-style: none;  /* Internet Explorer 10+ */
+              scrollbar-width: none;  /* Firefox */
+            }
+          `;
+          document.head.appendChild(style);
+          document.querySelector('.app').style.maxWidth = '100%';
+          document.querySelector('.header').style.maxWidth = '100%';
+          document.documentElement.style.setProperty('-webkit-tap-highlight-color', 'transparent');
+          // document.documentElement.style.setProperty('-webkit-scrollbar', 'transparent');
+          document.querySelector('.ott-list').style.display = 'none';
+          document.querySelector('.note-msg').style.display = 'none';
+          document.querySelector('.account').style.display = 'none';
+          document.querySelector('#hhide').style.display = 'none';
+          document.querySelector('.play-btn-s').style.display = 'none';
+          document.querySelector('.model-btn-download').style.display = 'none';
+          document.querySelector('.model-rating-box').style.display = 'none';
+          document.querySelector('.search').style.maxWidth = '100%';
+          document.querySelector('.modal-dialog').style.maxWidth = '100%';
+          document.querySelector('#search-input').style.boxShadow = 'none';
+          document.querySelector('.footer').style.display = 'none';
+          document.querySelector('.btn-close-moveable').style.display = 'none';
+          document.querySelector('.btn-close2').style.padding = '15px';
+          document.querySelector('.btn-search-close').style.padding = '15px';
+          document.querySelector('.btn-search-close').style.marginTop = '30px';
+          document.querySelector('.btn-close').style.marginTop = '30px';
+          document.querySelector('.search-box').style.marginTop = '60px';
+
+
+          document.querySelector('.search').style.zIndex = '2';
+          document.querySelector('.modal').style.zIndex = '3';
+          document.querySelector('#player').style.zIndex = '3';
+          // document.querySelector('.bottom-navigation-container').style.zIndex = '4';
+
+          var btns = document.querySelectorAll('.info .ion-align-items-center .ion-tex-center')
+          btns.item(0).style.display = 'none'
+          btns.item(1).style.flex = 1
+          btns.item(1).style.maxWidth = '100%'
+          btns.item(1).style.marginLeft = '20px'
+
+          document.querySelector('.nav-container').style.padding = '40px 10px 10px 10px';
+          document.querySelector('.nav-logo a').onclick = '/home ';
+
+          var logo = document.querySelector('.brand-logo')
+          logo.src = "https://img.icons8.com/external-tal-revivo-color-tal-revivo/24/external-netflix-an-american-video-on-demand-service-logo-color-tal-revivo.png"
+          logo.style.width = "30px"
+          logo.style.height = "30px"
+
+          document.querySelector('.btn-close').addEventListener('click', () => {
+            window.flutter_inappwebview.callHandler('modalHandler', false);
+          })
+
+          document.querySelector('.btn-close2').addEventListener('click', () => {
+            window.flutter_inappwebview.callHandler('modalHandler', false);
+          })
+
+          document.querySelector('.btn-search-close').addEventListener('click', () => {
+            window.flutter_inappwebview.callHandler('modalHandler', false);
+          })
+        }
         
-        // document.querySelector('.info2').style.opacity = '0'
-        // ad.click()
-        // loaction.href = '/home'
-      } else {
-        document.querySelector('.app').style.maxWidth = '100%';
-        document.querySelector('.header').style.maxWidth = '100%';
-        document.documentElement.style.setProperty('-webkit-tap-highlight-color', 'transparent');
-        // document.documentElement.style.setProperty('-webkit-scrollbar', 'transparent');
-        document.querySelector('.ott-list').style.display = 'none';
-        document.querySelector('.note-msg').style.display = 'none';
-        document.querySelector('.account').style.display = 'none';
-        document.querySelector('#hhide').style.display = 'none';
-        document.querySelector('.play-btn-s').style.display = 'none';
-        document.querySelector('.model-btn-download').style.display = 'none';
-        document.querySelector('.model-rating-box').style.display = 'none';
-        document.querySelector('.search').style.maxWidth = '100%';
-        document.querySelector('.modal-dialog').style.maxWidth = '100%';
-        document.querySelector('#search-input').style.boxShadow = 'none';
-        document.querySelector('.footer').style.display = 'none';
-        document.querySelector('.btn-close-moveable').style.display = 'none';
-        document.querySelector('.btn-close2').style.padding = '15px';
-        document.querySelector('.btn-search-close').style.padding = '15px';
 
-        document.querySelector('.search').style.zIndex = '2';
-        document.querySelector('.modal').style.zIndex = '3';
-        document.querySelector('#player').style.zIndex = '3';
-        // document.querySelector('.bottom-navigation-container').style.zIndex = '4';
-
-        var btns = document.querySelectorAll('.info .ion-align-items-center .ion-tex-center')
-        btns.item(0).style.display = 'none'
-        btns.item(1).style.flex = 1
-        btns.item(1).style.maxWidth = '100%'
-        btns.item(1).style.marginLeft = '20px'
-
-        document.querySelector('.nav-container').style.padding = '10px ';
-        document.querySelector('.nav-logo a').onclick = '/home ';
-
-        var logo = document.querySelector('.brand-logo')
-        logo.src = "https://img.icons8.com/external-tal-revivo-color-tal-revivo/24/external-netflix-an-american-video-on-demand-service-logo-color-tal-revivo.png"
-        logo.style.width = "30px"
-        logo.style.height = "30px"
-      }
-      
-
-    ''');
+      ''');
 
     if (isDesktop) {
       webViewController?.evaluateJavascript(source: '''
@@ -223,17 +247,6 @@ class _MainState extends State<Main> {
       ''');
     }
 
-    webViewController?.addJavaScriptHandler(
-        handlerName: 'modalHandler',
-        callback: (args) {
-          bool isModalOpen = args[0]; // The value passed from JavaScript
-          setState(() {
-            this.isModalOpen = isModalOpen;
-          });
-        });
-
-    // print("MOODALLLLLLLLLLLLLLLLLL $isModalOpen");
-
     void nav(int index) {
       webViewController?.stopLoading();
       setState(() {
@@ -252,21 +265,20 @@ class _MainState extends State<Main> {
       ));
     }
 
-    // Future<void> setCookie() async {
-    //   final expiresDate =
-    //       DateTime.now().add(Duration(days: 100)).millisecondsSinceEpoch;
-    //   bool ck = await cookieManager.setCookie(
-    //     url: WebUri("https://iosmirror.cc"),
-    //     name: "hd",
-    //     value: "on",
-    //     domain: ".iosmirror.cc",
-    //     path: "/",
-    //     expiresDate: expiresDate,
-    //   );
-    //   print("COOOOOOOOOOOOOOKIEEEEEEE $ck");
-    // }
-
-    // setCookie();
+    Future<void> setCookieOTT() async {
+      await cookieManager.setCookie(
+        url: WebUri("https://iosmirror.cc"),
+        name: "ott",
+        value: "pv",
+        domain: ".iosmirror.cc",
+        path: "/",
+      );
+      Navigator.push(context, MaterialPageRoute(
+        builder: (context) {
+          return const SplashScreen(ott: 1);
+        },
+      ));
+    }
 
     return WillPopScope(
       onWillPop: () async {
@@ -283,305 +295,463 @@ class _MainState extends State<Main> {
         }
         return true;
       },
-      child: SafeArea(
-          // minimum: EdgeInsets.all(20),
-          child: isDesktop
-              ? Scaffold(
-                  backgroundColor: Colors.black,
-                  body: Column(children: <Widget>[
-                    Expanded(
-                      child: Stack(
-                        children: [
-                          Focus(
-                            // focusNode: _focusNode,
-                            onFocusChange: (value) {},
-                            onKeyEvent: (node, event) {
-                              if (event is KeyDownEvent) {
-                                if (event.logicalKey ==
-                                    LogicalKeyboardKey.arrowUp) {
-                                  // _focusNode.requestFocus();
-                                  webViewController
-                                      ?.evaluateJavascript(source: """
+      child: isDesktop
+          ? Scaffold(
+              backgroundColor: Colors.black,
+              body: Column(children: <Widget>[
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Focus(
+                        // focusNode: _focusNode,
+                        onFocusChange: (value) {},
+                        onKeyEvent: (node, event) {
+                          if (event is KeyDownEvent) {
+                            if (event.logicalKey ==
+                                LogicalKeyboardKey.arrowUp) {
+                              // _focusNode.requestFocus();
+                              webViewController?.evaluateJavascript(source: """
                                         var prevElem = document.activeElement.previousElementSibling;
                                         if (prevElem && prevElem.hasAttribute('tabindex')) {
                                           prevElem.focus();
                                         }
                                       """);
-                                  return KeyEventResult.handled;
-                                }
-                                // Handle arrow down, left, right similarly
-                              }
-                              return KeyEventResult.ignored;
-                            },
-                            child: InAppWebView(
-                              key: webViewKey,
-                              initialUrlRequest:
-                                  URLRequest(url: WebUri(urlHome)),
-                              initialSettings: InAppWebViewSettings(
-                                  contentBlockers: contentBlockers,
-                                  clearCache: true,
-                                  allowBackgroundAudioPlaying: true,
-                                  allowsPictureInPictureMediaPlayback: true,
-                                  useOnLoadResource: true,
-                                  cacheEnabled: false,
-                                  useOnDownloadStart: true,
-                                  // cacheMode: CacheMode.LOAD_CACHE_ELSE_NETWORK,
-                                  verticalScrollBarEnabled: false,
-                                  horizontalScrollBarEnabled: false,
-                                  iframeAllowFullscreen: false,
-                                  isTextInteractionEnabled: false,
-                                  hardwareAcceleration: true,
-                                  javaScriptEnabled: true),
-                              onWebViewCreated: (controller) {
-                                webViewController = controller;
-                              },
-                              onReceivedServerTrustAuthRequest:
-                                  (controller, challenge) async {
-                                return ServerTrustAuthResponse(
-                                    action:
-                                        ServerTrustAuthResponseAction.PROCEED);
-                              },
-                              onLoadStart: (controller, url) {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                              },
-                              onReceivedError: (controller, request, error) {
-                                if (error.type ==
-                                    WebResourceErrorType.UNSUPPORTED_SCHEME) {
-                                  controller.goBack();
-                                }
-                              },
-                              onLoadStop: (controller, url) async {
-                                setState(() {
-                                  isLoading = false;
-                                  resourceLoad = 0;
-                                });
-                                await controller.evaluateJavascript(source: """
-                                  document.querySelectorAll('a, button, input, .btn-play, article').forEach(function(el) {
-                                    if (!el.hasAttribute('tabindex')) {
-                                      el.setAttribute('tabindex', '0');
-                                    }
-                                  });
-                                """);
-                                await controller.evaluateJavascript(source: """
-                                  document.addEventListener('keydown', function(event) {
-                                    switch (event.key) {
-                                      case 'ArrowUp':
-                                        event.preventDefault();
-                                        let prevElem = document.activeElement.previousElementSibling;
-                                        if (prevElem && prevElem.hasAttribute('tabindex')) {
-                                          prevElem.focus();
-                                        }
-                                        break;
-                                      case 'ArrowDown':
-                                        event.preventDefault();
-                                        let nextElem = document.activeElement.nextElementSibling;
-                                        if (nextElem && nextElem.hasAttribute('tabindex')) {
-                                          nextElem.focus();
-                                        }
-                                        break;
-                                      case 'ArrowLeft':
-                                        event.preventDefault();
-                                        let prevElemLeft = document.activeElement.previousElementSibling;
-                                        if (prevElemLeft && prevElemLeft.hasAttribute('tabindex')) {
-                                          prevElemLeft.focus();
-                                        }
-                                        break;
-                                      case 'ArrowRight':
-                                        event.preventDefault();
-                                        let nextElemRight = document.activeElement.nextElementSibling;
-                                        if (nextElemRight && nextElemRight.hasAttribute('tabindex')) {
-                                          nextElemRight.focus();
-                                        }
-                                        break;
-                                    }
-                                  });
+                              return KeyEventResult.handled;
+                            }
+                            // Handle arrow down, left, right similarly
+                          }
+                          return KeyEventResult.ignored;
+                        },
+                        child: InAppWebView(
+                          key: webViewKey,
+                          initialUrlRequest: URLRequest(url: WebUri(urlHome)),
+                          initialSettings: InAppWebViewSettings(
+                              contentBlockers: contentBlockers,
+                              clearCache: true,
+                              allowBackgroundAudioPlaying: true,
+                              allowsPictureInPictureMediaPlayback: true,
+                              useOnLoadResource: true,
+                              cacheEnabled: false,
+                              useOnDownloadStart: true,
+                              // cacheMode: CacheMode.LOAD_CACHE_ELSE_NETWORK,
+                              verticalScrollBarEnabled: false,
+                              horizontalScrollBarEnabled: false,
+                              iframeAllowFullscreen: false,
+                              isTextInteractionEnabled: false,
+                              hardwareAcceleration: true,
+                              javaScriptEnabled: true),
+                          onWebViewCreated: (controller) async {
+                            webViewController = controller;
 
-                                """);
-                              },
-                              onTitleChanged: (controller, title) {
-                                setState(() {
-                                  isLoading = false;
-                                });
-                              },
-                              shouldOverrideUrlLoading:
-                                  (controller, navigationAction) async {
-                                final uri = navigationAction.request.url!;
-                                print('hostttttTTTTTTTTTTT' + uri.host);
-                                var whiteList = [
-                                  "www.iosmirror.cc",
-                                  "iosmirror.cc",
-                                  "www.verify2.iosmirror.cc"
-                                ];
-                                if (whiteList.contains(uri.host)) {
-                                  return NavigationActionPolicy.ALLOW;
+                            // await controller.loadUrl(
+                            //     urlRequest: URLRequest(url: WebUri(urlHome)));
+                          },
+                          onLoadStart: (controller, url) {
+                            // cookieManager.setCookie(
+                            //   url: WebUri("https://iosmirror.cc"),
+                            //   name: "ott",
+                            //   value: "nf",
+                            //   domain: ".iosmirror.cc",
+                            //   path: "/",
+                            // );
+                            // print("INITTTTTTTTTTTTTTT ");
+                          },
+                          onReceivedServerTrustAuthRequest:
+                              (controller, challenge) async {
+                            return ServerTrustAuthResponse(
+                                action: ServerTrustAuthResponseAction.PROCEED);
+                          },
+                          onReceivedError: (controller, request, error) {
+                            if (error.type ==
+                                WebResourceErrorType.UNSUPPORTED_SCHEME) {
+                              controller.goBack();
+                            }
+                          },
+                          onLoadStop: (controller, url) async {
+                            setState(() {
+                              isLoading = false;
+                              resourceLoad = 0;
+                            });
+                            await controller.evaluateJavascript(source: """
+                              document.querySelectorAll('a, button, input, .btn-play, article').forEach(function(el) {
+                                if (!el.hasAttribute('tabindex')) {
+                                  el.setAttribute('tabindex', '0');
                                 }
-                                return NavigationActionPolicy.CANCEL;
-                              },
-                              onProgressChanged: (controller, progress) {
-                                if (progress == 100) {}
-                                setState(() {
-                                  this.progress = progress;
-                                });
-                              },
-                              onLoadResource: (controller, resource) {
-                                if (resourceLoad < 5) {
-                                  webViewController?.evaluateJavascript(
-                                      source: closeJS);
+                              });
+                            """);
+                            await controller.evaluateJavascript(source: """
+                              document.addEventListener('keydown', function(event) {
+                                switch (event.key) {
+                                  case 'ArrowUp':
+                                    event.preventDefault();
+                                    let prevElem = document.activeElement.previousElementSibling;
+                                    if (prevElem && prevElem.hasAttribute('tabindex')) {
+                                      prevElem.focus();
+                                    }
+                                    break;
+                                  case 'ArrowDown':
+                                    event.preventDefault();
+                                    let nextElem = document.activeElement.nextElementSibling;
+                                    if (nextElem && nextElem.hasAttribute('tabindex')) {
+                                      nextElem.focus();
+                                    }
+                                    break;
+                                  case 'ArrowLeft':
+                                    event.preventDefault();
+                                    let prevElemLeft = document.activeElement.previousElementSibling;
+                                    if (prevElemLeft && prevElemLeft.hasAttribute('tabindex')) {
+                                      prevElemLeft.focus();
+                                    }
+                                    break;
+                                  case 'ArrowRight':
+                                    event.preventDefault();
+                                    let nextElemRight = document.activeElement.nextElementSibling;
+                                    if (nextElemRight && nextElemRight.hasAttribute('tabindex')) {
+                                      nextElemRight.focus();
+                                    }
+                                    break;
                                 }
-                              },
-                            ),
-                          ),
-                          progress < 70
-                              ? Container(
-                                  width: MediaQuery.of(context).size.width,
-                                  height: MediaQuery.of(context).size.height,
-                                  alignment: Alignment.center,
-                                  decoration: const BoxDecoration(
-                                      color: Color.fromRGBO(0, 0, 0, 0.915)),
-                                  child: const CircularProgressIndicator(
-                                      color: Color.fromARGB(255, 220, 23, 23)),
-                                )
-                              : const SizedBox()
-                        ],
+                              });
+      
+                            """);
+                          },
+                          onTitleChanged: (controller, title) async {},
+                          shouldOverrideUrlLoading:
+                              (controller, navigationAction) async {
+                            final uri = navigationAction.request.url!;
+                            print('hostttttTTTTTTTTTTT${uri.host}');
+                            var whiteList = [
+                              "www.iosmirror.cc",
+                              "iosmirror.cc",
+                              "www.verify2.iosmirror.cc"
+                            ];
+                            if (whiteList.contains(uri.host)) {
+                              return NavigationActionPolicy.ALLOW;
+                            }
+                            return NavigationActionPolicy.CANCEL;
+                          },
+                          onProgressChanged: (controller, progress) {
+                            if (progress == 100) {}
+                            setState(() {
+                              this.progress = progress;
+                            });
+                          },
+                          onLoadResource: (controller, resource) {
+                            if (resourceLoad < 5) {
+                              webViewController?.evaluateJavascript(
+                                  source: closeJS);
+                            }
+                          },
+                        ),
                       ),
-                    ),
-                  ]),
-                )
-              : Scaffold(
-                  backgroundColor: Colors.black,
-                  bottomNavigationBar: BottomNavigationBar(
-                    backgroundColor: const Color.fromARGB(255, 21, 21, 21),
-                    // showSelectedLabels: false,
-                    // showUnselectedLabels: false,
-                    selectedLabelStyle: const TextStyle(fontSize: 10),
-                    unselectedLabelStyle: const TextStyle(fontSize: 10),
-                    currentIndex: currentIndex,
-                    onTap: (value) => nav(value),
-                    type: BottomNavigationBarType.fixed,
-                    unselectedItemColor: const Color.fromRGBO(53, 53, 53, 1),
-                    selectedItemColor: Colors.white,
-                    elevation: 20,
-                    items: const [
-                      BottomNavigationBarItem(
-                        icon: Icon(
-                          Icons.home_outlined,
-                        ),
-                        activeIcon: Icon(
-                          Icons.home_filled,
-                        ),
-                        label: "Home",
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(
-                          Icons.movie_outlined,
-                        ),
-                        activeIcon: Icon(
-                          Icons.movie_rounded,
-                        ),
-                        label: "Movies",
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(
-                          Icons.smart_display_outlined,
-                        ),
-                        activeIcon: Icon(
-                          Icons.smart_display_rounded,
-                        ),
-                        label: "Series",
-                      ),
+                      progress < 70
+                          ? Container(
+                              width: MediaQuery.of(context).size.width,
+                              height: MediaQuery.of(context).size.height,
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(
+                                  color: Color.fromRGBO(0, 0, 0, 0.915)),
+                              child: const CircularProgressIndicator(
+                                  color: Color.fromARGB(255, 220, 23, 23)),
+                            )
+                          : const SizedBox()
                     ],
                   ),
-                  body: Column(children: <Widget>[
-                    Expanded(
-                      child: Stack(
+                ),
+              ]),
+            )
+          : Scaffold(
+              backgroundColor: Colors.black,
+              bottomNavigationBar: isModalOpen
+                  ? const SizedBox()
+                  : Container(
+                      width: MediaQuery.of(context).size.width / 2,
+                      height: 70,
+                      alignment: Alignment.center,
+                      color: const Color.fromARGB(255, 4, 4, 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          InAppWebView(
-                            key: webViewKey,
-                            initialUrlRequest: URLRequest(url: WebUri(urlHome)),
-                            initialSettings: InAppWebViewSettings(
-                                contentBlockers: contentBlockers,
-                                clearCache: true,
-                                allowBackgroundAudioPlaying: true,
-                                allowsPictureInPictureMediaPlayback: true,
-                                useOnLoadResource: true,
-                                cacheEnabled: false,
-                                useOnDownloadStart: true,
-                                // cacheMode: CacheMode.LOAD_CACHE_ELSE_NETWORK,
-                                verticalScrollBarEnabled: false,
-                                horizontalScrollBarEnabled: false,
-                                iframeAllowFullscreen: false,
-                                isTextInteractionEnabled: false,
-                                hardwareAcceleration: true,
-                                javaScriptEnabled: true),
-                            onWebViewCreated: (controller) {
-                              webViewController = controller;
-                            },
-                            shouldOverrideUrlLoading:
-                                (controller, navigationAction) async {
-                              final uri = navigationAction.request.url!;
-                              print('hosttttttttttttt' + uri.host);
-                              var whiteList = [
-                                "iosmirror.cc",
-                                "userverify.netmirror.app"
-                              ];
-                              if (whiteList.contains(uri.host)) {
-                                return NavigationActionPolicy.ALLOW;
-                              }
-                              return NavigationActionPolicy.CANCEL;
-                            },
-                            onReceivedServerTrustAuthRequest:
-                                (controller, challenge) async {
-                              return ServerTrustAuthResponse(
-                                  action:
-                                      ServerTrustAuthResponseAction.PROCEED);
-                            },
-                            onLoadStart: (controller, url) {
-                              setState(() {
-                                isLoading = true;
-                              });
-                            },
-                            onReceivedError: (controller, request, error) {
-                              if (error.type ==
-                                  WebResourceErrorType.UNSUPPORTED_SCHEME) {
-                                controller.goBack();
-                              }
-                            },
-                            onTitleChanged: (controller, title) {
-                              setState(() {
-                                isLoading = false;
-                              });
-                            },
-                            onProgressChanged: (controller, progress) {
-                              if (progress == 100) {}
-                              setState(() {
-                                this.progress = progress;
-                              });
-                            },
-                            onLoadResource: (controller, resource) {
-                              if (resourceLoad < 5) {
-                                webViewController?.evaluateJavascript(
-                                    source: closeJS);
-                              }
-                            },
+                          Container(
+                            alignment: Alignment.center,
+                            width: MediaQuery.of(context).size.width / 4,
+                            child: MaterialButton(
+                              onPressed: () {
+                                nav(0);
+                              },
+                              child: currentIndex == 0
+                                  ? const Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.home_filled,
+                                          color: Colors.white,
+                                        ),
+                                        Text(
+                                          "Home",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10),
+                                        )
+                                      ],
+                                    )
+                                  : const Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.home_outlined,
+                                          color: Color.fromRGBO(53, 53, 53, 1),
+                                        ),
+                                        Text(
+                                          "Home",
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              color: Color.fromRGBO(
+                                                  53, 53, 53, 1)),
+                                        )
+                                      ],
+                                    ),
+                            ),
                           ),
-                          progress < 100
-                              ? Container(
-                                  width: MediaQuery.of(context).size.width,
-                                  height: MediaQuery.of(context).size.height,
-                                  alignment: Alignment.center,
-                                  decoration: const BoxDecoration(
-                                      color: Color.fromRGBO(0, 0, 0, 0.915)),
-                                  child: const CircularProgressIndicator(
-                                      color: Color.fromARGB(255, 220, 23, 23)),
-                                )
-                              : const SizedBox()
+                          Container(
+                            alignment: Alignment.center,
+                            width: MediaQuery.of(context).size.width / 3 - 20,
+                            child: MaterialButton(
+                              onPressed: () {
+                                nav(1);
+                              },
+                              child: currentIndex == 1
+                                  ? const Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.movie_rounded,
+                                          color: Colors.white,
+                                        ),
+                                        Text(
+                                          "Movies",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10),
+                                        )
+                                      ],
+                                    )
+                                  : const Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.movie_outlined,
+                                          color: Color.fromRGBO(53, 53, 53, 1),
+                                        ),
+                                        Text(
+                                          "Movies",
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              color: Color.fromRGBO(
+                                                  53, 53, 53, 1)),
+                                        )
+                                      ],
+                                    ),
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            width: MediaQuery.of(context).size.width / 3 - 20,
+                            child: MaterialButton(
+                              onPressed: () {
+                                nav(2);
+                              },
+                              child: currentIndex == 2
+                                  ? const Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.smart_display_rounded,
+                                          color: Colors.white,
+                                        ),
+                                        Text(
+                                          "Series",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10),
+                                        )
+                                      ],
+                                    )
+                                  : const Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.smart_display_outlined,
+                                          color: Color.fromRGBO(53, 53, 53, 1),
+                                        ),
+                                        Text(
+                                          "Series",
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              color: Color.fromRGBO(
+                                                  53, 53, 53, 1)),
+                                        )
+                                      ],
+                                    ),
+                            ),
+                          ),
                         ],
+                      )),
+              resizeToAvoidBottomInset: false,
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.endContained,
+              floatingActionButtonAnimator:
+                  FloatingActionButtonAnimator.scaling,
+              floatingActionButton: FloatingActionButton(
+                backgroundColor: const Color.fromARGB(0, 0, 0, 0),
+                onPressed: () => setCookieOTT(),
+                child: Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(10)),
+                  child: const Image(
+                    image: AssetImage("lib/assets/images/prime.png"),
+                    width: 30,
+                    height: 30,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+              body: Column(children: <Widget>[
+                Expanded(
+                  child: Stack(
+                    children: [
+                      InAppWebView(
+                        key: webViewKey,
+                        initialUrlRequest: URLRequest(url: WebUri(urlHome)),
+                        initialSettings: InAppWebViewSettings(
+                            contentBlockers: contentBlockers,
+                            clearCache: true,
+                            allowBackgroundAudioPlaying: true,
+                            allowsPictureInPictureMediaPlayback: true,
+                            useOnLoadResource: true,
+                            cacheEnabled: false,
+                            useOnDownloadStart: true,
+                            // cacheMode: CacheMode.LOAD_CACHE_ELSE_NETWORK,
+                            verticalScrollBarEnabled: false,
+                            horizontalScrollBarEnabled: false,
+                            iframeAllowFullscreen: false,
+                            isTextInteractionEnabled: false,
+                            hardwareAcceleration: true,
+                            javaScriptEnabled: true),
+                        onWebViewCreated: (controller) async {
+                          webViewController = controller;
+                          final expiresDate = DateTime.now()
+                              .add(const Duration(days: 100))
+                              .millisecondsSinceEpoch;
+                          bool hd = await cookieManager.setCookie(
+                            url: WebUri("https://iosmirror.cc"),
+                            name: "hd",
+                            value: "on",
+                            domain: ".iosmirror.cc",
+                            path: "/",
+                            expiresDate: expiresDate,
+                          );
+                          bool init = await cookieManager.setCookie(
+                            url: WebUri("https://iosmirror.cc"),
+                            name: "ott",
+                            value: "nf",
+                            domain: ".iosmirror.cc",
+                            path: "/",
+                          );
+                          webViewController?.addJavaScriptHandler(
+                              handlerName: 'modalHandler',
+                              callback: (args) {
+                                bool isModalOpen =
+                                    args[0]; // The value passed from JavaScript
+                                setState(() {
+                                  this.isModalOpen = isModalOpen;
+                                });
+                              });
+                          print("INITTTTTTTTTTTTTTT $init");
+                          controller.loadUrl(
+                              urlRequest: URLRequest(url: WebUri(urlHome)));
+                        },
+                        shouldOverrideUrlLoading:
+                            (controller, navigationAction) async {
+                          final uri = navigationAction.request.url!;
+                          print('hosttttttttttttt${uri.host}');
+                          var whiteList = [
+                            "iosmirror.cc",
+                            "userverify.netmirror.app"
+                          ];
+                          if (whiteList.contains(uri.host)) {
+                            return NavigationActionPolicy.ALLOW;
+                          }
+                          return NavigationActionPolicy.CANCEL;
+                        },
+                        onReceivedServerTrustAuthRequest:
+                            (controller, challenge) async {
+                          return ServerTrustAuthResponse(
+                              action: ServerTrustAuthResponseAction.PROCEED);
+                        },
+                        onReceivedError: (controller, request, error) {
+                          if (error.type ==
+                              WebResourceErrorType.UNSUPPORTED_SCHEME) {
+                            controller.goBack();
+                          }
+                        },
+                        onProgressChanged: (controller, progress) {
+                          if (progress == 100) {}
+                          setState(() {
+                            this.progress = progress;
+                          });
+                        },
+                        onLoadResource: (controller, resource) {
+                          if (resourceLoad < 5) {
+                            webViewController?.evaluateJavascript(
+                                source: closeJS);
+                          }
+                        },
+                        onExitFullscreen: (controller) {
+                          SystemChrome.setEnabledSystemUIMode(
+                              SystemUiMode.edgeToEdge);
+                          SystemChrome.setPreferredOrientations([
+                            DeviceOrientation.portraitUp,
+                            DeviceOrientation.portraitDown,
+                          ]);
+                        },
                       ),
-                    ),
-                  ]),
-                )),
+                      progress < 100
+                          ? Container(
+                              width: MediaQuery.of(context).size.width,
+                              height: MediaQuery.of(context).size.height,
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(
+                                  color: Color.fromRGBO(0, 0, 0, 0.915)),
+                              child: const CircularProgressIndicator(
+                                  color: Color.fromARGB(255, 220, 23, 23)),
+                            )
+                          : const SizedBox()
+                    ],
+                  ),
+                ),
+              ]),
+            ),
     );
   }
 }
