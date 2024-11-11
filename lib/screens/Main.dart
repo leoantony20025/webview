@@ -217,6 +217,7 @@ class _MainState extends State<Main> {
         document.querySelectorAll('.tray-slide:first-child').forEach(e => e.style.marginLeft = '30px')
         
         var navContainer = document.querySelector('.nav-container');
+        navContainer.style.padding = '20px 30px';
 
         if (navContainer && navContainer.children.length <= 4) {
           const e1 = document.createElement('a');
@@ -298,6 +299,28 @@ class _MainState extends State<Main> {
       child: isDesktop
           ? Scaffold(
               backgroundColor: Colors.black,
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.endContained,
+              floatingActionButtonAnimator:
+                  FloatingActionButtonAnimator.scaling,
+              floatingActionButton: !isModalOpen
+                  ? FloatingActionButton(
+                      backgroundColor: const Color.fromARGB(0, 0, 0, 0),
+                      onPressed: () => setCookieOTT(),
+                      child: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: const Image(
+                          image: AssetImage("lib/assets/images/prime.png"),
+                          width: 30,
+                          height: 30,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    )
+                  : SizedBox(),
               body: Column(children: <Widget>[
                 Expanded(
                   child: Stack(
@@ -342,19 +365,36 @@ class _MainState extends State<Main> {
                               javaScriptEnabled: true),
                           onWebViewCreated: (controller) async {
                             webViewController = controller;
-
-                            // await controller.loadUrl(
-                            //     urlRequest: URLRequest(url: WebUri(urlHome)));
-                          },
-                          onLoadStart: (controller, url) {
-                            // cookieManager.setCookie(
-                            //   url: WebUri("https://iosmirror.cc"),
-                            //   name: "ott",
-                            //   value: "nf",
-                            //   domain: ".iosmirror.cc",
-                            //   path: "/",
-                            // );
-                            // print("INITTTTTTTTTTTTTTT ");
+                            final expiresDate = DateTime.now()
+                                .add(const Duration(days: 100))
+                                .millisecondsSinceEpoch;
+                            bool hd = await cookieManager.setCookie(
+                              url: WebUri("https://iosmirror.cc"),
+                              name: "hd",
+                              value: "on",
+                              domain: ".iosmirror.cc",
+                              path: "/",
+                              expiresDate: expiresDate,
+                            );
+                            bool init = await cookieManager.setCookie(
+                              url: WebUri("https://iosmirror.cc"),
+                              name: "ott",
+                              value: "nf",
+                              domain: ".iosmirror.cc",
+                              path: "/",
+                            );
+                            webViewController?.addJavaScriptHandler(
+                                handlerName: 'modalHandler',
+                                callback: (args) {
+                                  bool isModalOpen = args[
+                                      0]; // The value passed from JavaScript
+                                  setState(() {
+                                    this.isModalOpen = isModalOpen;
+                                  });
+                                });
+                            print("INITTTTTTTTTTTTTTT $init");
+                            controller.loadUrl(
+                                urlRequest: URLRequest(url: WebUri(urlHome)));
                           },
                           onReceivedServerTrustAuthRequest:
                               (controller, challenge) async {

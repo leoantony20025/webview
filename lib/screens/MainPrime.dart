@@ -333,6 +333,35 @@ class _MainPrimeState extends State<MainPrime> {
                               javaScriptEnabled: true),
                           onWebViewCreated: (controller) async {
                             webViewController = controller;
+                            final expiresDate = DateTime.now()
+                                .add(const Duration(days: 100))
+                                .millisecondsSinceEpoch;
+                            bool hd = await cookieManager.setCookie(
+                              url: WebUri("https://iosmirror.cc"),
+                              name: "hd",
+                              value: "on",
+                              domain: ".iosmirror.cc",
+                              path: "/",
+                              expiresDate: expiresDate,
+                            );
+                            await cookieManager.setCookie(
+                              url: WebUri("https://iosmirror.cc"),
+                              name: "ott",
+                              value: "pv",
+                              domain: ".iosmirror.cc",
+                              path: "/",
+                            );
+                            webViewController?.addJavaScriptHandler(
+                                handlerName: 'modalHandler',
+                                callback: (args) {
+                                  bool isModalOpen = args[
+                                      0]; // The value passed from JavaScript
+                                  setState(() {
+                                    this.isModalOpen = isModalOpen;
+                                  });
+                                });
+                            controller.loadUrl(
+                                urlRequest: URLRequest(url: WebUri(urlHome)));
                           },
                           onReceivedServerTrustAuthRequest:
                               (controller, challenge) async {
@@ -395,7 +424,7 @@ class _MainPrimeState extends State<MainPrime> {
                           shouldOverrideUrlLoading:
                               (controller, navigationAction) async {
                             final uri = navigationAction.request.url!;
-                            print('hostttttTTTTTTTTTTT${uri.host}');
+                            print('hosttttttttttttt${uri.host}');
                             var whiteList = [
                               "www.iosmirror.cc",
                               "iosmirror.cc",
